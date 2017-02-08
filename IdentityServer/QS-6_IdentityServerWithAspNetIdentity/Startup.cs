@@ -11,6 +11,8 @@ using IdentityServerWithAspNetIdentity.Services;
 using IdentityServer4.Validation;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
+using IdentityServerWithAspNetIdentity.Configs;
+using System.Collections.Generic;
 
 namespace IdentityServerWithAspNetIdentity
 {
@@ -52,12 +54,15 @@ namespace IdentityServerWithAspNetIdentity
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
+            IdentityServerClients idsClients = new IdentityServerClients();
+            Configuration.GetSection("IdentityServerClients").Bind(idsClients);
+            
             services.AddIdentityServer()
                 .AddTemporarySigningCredential()
                 .AddInMemoryPersistedGrants()
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients())
+                .AddInMemoryClients(Config.GetClients(idsClients, "secret"))
                 .AddAspNetIdentity<ApplicationUser>();
             services.AddScoped<SignInManager<ApplicationUser>, ApplicationSignInManager>();
             //https://stackoverflow.com/questions/41687659/how-to-add-additional-claims-to-be-included-in-the-access-token-using-asp-net-id

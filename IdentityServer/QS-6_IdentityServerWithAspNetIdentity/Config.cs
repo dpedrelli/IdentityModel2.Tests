@@ -7,6 +7,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Validation;
+using IdentityServerWithAspNetIdentity.Configs;
 using IdentityServerWithAspNetIdentity.Configs.Clients;
 using IdentityServerWithAspNetIdentity.Models;
 using Microsoft.AspNetCore.Identity;
@@ -43,13 +44,89 @@ namespace IdentityServerWithAspNetIdentity
             };
         }
 
-        // clients want to access resources (aka scopes)
-        public static IEnumerable<Client> GetClients()
+        public static IEnumerable<Client> GetClients(IdentityServerClients clients, string secret)
         {
-            return new List<Client>
+            List<Client> result = new List<Client>();
+            foreach (ClientSettings client in clients.ClientSettings)
             {
-                MvcClient.Get(),
-                ExeClient.Get(),
+                result.Add(Get(client, secret));
+            }
+            return result;
+        }
+
+        public static Client Get(ClientSettings clientSettings, string secret)
+        {
+            if (clientSettings.AllowedGrantTypes == null)
+            {
+                clientSettings.AllowedGrantTypes = new List<string>();
+            }
+            if (clientSettings.AllowedGrantTypes.Count() == 0)
+            {
+                if (clientSettings.Type == "EXE")
+                {
+                    clientSettings.AllowedGrantTypes = GrantTypes.Hybrid;
+                }
+                else
+                {
+                    clientSettings.AllowedGrantTypes = GrantTypes.HybridAndClientCredentials;
+                }
+            }
+
+            if (clientSettings.RedirectUris == null)
+            {
+                clientSettings.RedirectUris = new List<string>();
+            }
+            if (clientSettings.PostLogoutRedirectUris == null)
+            {
+                clientSettings.PostLogoutRedirectUris = new List<string>();
+            }
+            // RedirectUris not specified.  Use the BaseRedirectUris to construct RedirectUris and PostLogoutRedirectUris
+            if ((clientSettings.RedirectUris.Count() == 0) && (clientSettings.BaseRedirectUris.Count() > 0))
+            {
+                foreach (string uri in clientSettings.BaseRedirectUris)
+                {
+                    string redirectUri = uri;
+                    string postLogoutRedirectUri = uri;
+                    // Check for and strip trailing "/" to allow for parsing the URI.
+                    if (redirectUri.LastIndexOf("/") == redirectUri.Length - 1)
+                    {
+                        redirectUri = uri.Substring(0, uri.Length-1);
+                        postLogoutRedirectUri = uri.Substring(0, uri.Length - 1);
+                    }
+                    // If EXE, ensure that the Redirect URIs include a port number.
+                    if ((clientSettings.Type == "EXE") && (uri.LastIndexOf(":") == uri.IndexOf(":")))
+                    {
+                        redirectUri += ":7890";
+                        postLogoutRedirectUri += ":7890";
+                    }
+                    else if (clientSettings.Type == "MVC")
+                    {
+                        redirectUri += "/signin-oidc";
+                    }
+                    clientSettings.RedirectUris.Add(redirectUri);
+                    clientSettings.PostLogoutRedirectUris.Add(postLogoutRedirectUri);
+                }
+            }
+
+            return new Client
+            {
+                ClientId = clientSettings.ClientId,
+                ClientName = clientSettings.ClientName,
+                AllowedGrantTypes = clientSettings.AllowedGrantTypes,
+
+                RequireConsent = false,
+                ClientSecrets =
+                {
+                    new Secret(secret.Sha256())
+                },
+                RedirectUris = clientSettings.RedirectUris,
+                PostLogoutRedirectUris = clientSettings.PostLogoutRedirectUris,
+                AllowOfflineAccess = clientSettings.AllowOfflineAccess, 
+                // EXE using IdentityModel2 requires PKCE or returns an invalid_grant error.
+                RequirePkce = ((clientSettings.RequirePkce) || (clientSettings.Type == "EXE")),
+                AllowedScopes = clientSettings.AllowedScopes,
+                AlwaysSendClientClaims = true,
+                AlwaysIncludeUserClaimsInIdToken = true,
             };
         }
     }

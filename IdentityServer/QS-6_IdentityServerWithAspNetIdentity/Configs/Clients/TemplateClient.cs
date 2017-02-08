@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace IdentityServerWithAspNetIdentity
 {
-    public class BaseClient
+    public class TemplateClient
     {
         public static Client Get(string id, string name, string secret, string uri, IEnumerable<string> grantTypes, bool requireConsent, bool allowOffline, bool requirePkce, bool useJwt, bool openId, bool profile, string scopes)
         {
@@ -48,5 +48,6 @@ namespace IdentityServerWithAspNetIdentity
 
             return client;
         }
+
     }
 }

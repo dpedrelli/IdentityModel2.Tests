@@ -57,7 +57,7 @@ namespace MvcClient
                 Authority = "http://localhost:5000",
                 RequireHttpsMetadata = false,
 
-                ClientId = "mvc",
+                ClientId = "mvcclient",
                 ClientSecret = "secret",
 
                 ResponseType = "code id_token",

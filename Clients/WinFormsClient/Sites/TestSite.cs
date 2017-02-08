@@ -15,7 +15,7 @@ namespace WinFormsClient
                     ClientId = "execlient",
                     ClientSecret = "secret",
                     Scope = "openid api1 offline_access",
-                    RedirectUri = "http://127.0.0.1:7890/",
+                    RedirectUri = "http://127.0.0.1:7890",
                     BaseAddress = "http://localhost:5001/",
                     ResourceEndpoints = new List<ResourceEndpoint>
                     {
