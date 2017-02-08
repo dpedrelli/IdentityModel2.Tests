@@ -36,11 +36,11 @@ namespace Api
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
+            string authority = Configuration.GetSection("IdentityServerAuthentication").GetValue<string>("Authority");
             app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
-                Authority = "http://localhost:5000",
-                RequireHttpsMetadata = false,
+                Authority = authority,
+                RequireHttpsMetadata = (authority.ToLower().Contains("https://")),
                 ApiName = "api1",
             });
 

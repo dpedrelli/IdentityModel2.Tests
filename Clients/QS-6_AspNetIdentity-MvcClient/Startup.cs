@@ -49,13 +49,14 @@ namespace MvcClient
 
             //https://leastprivilege.com/2016/08/21/why-does-my-authorize-attribute-not-work/
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            string authority = Configuration.GetSection("IdentityServerAuthentication").GetValue<string>("Authority");
             app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
             {
                 AuthenticationScheme = "oidc",
                 SignInScheme = "Cookies",
 
-                Authority = "http://localhost:5000",
-                RequireHttpsMetadata = false,
+                Authority = authority,
+                RequireHttpsMetadata = (authority.ToLower().Contains("https://")),
 
                 ClientId = "mvcclient",
                 ClientSecret = "secret",
