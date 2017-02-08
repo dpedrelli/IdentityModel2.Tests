@@ -31,23 +31,35 @@ namespace IdentityServerWithAspNetIdentity
             };
         }
 
-        public static IEnumerable<ApiResource> GetApiResources()
+        //public static IEnumerable<ApiResource> GetApiResources()
+        //{
+        //    return new List<ApiResource>
+        //    {
+        //        new ApiResource("api1", "My API")
+        //        {
+        //            // Necessary to pass Identity user roles to API
+        //            UserClaims = {"role"}
+        //        },
+        //    };
+        //}
+        public static IEnumerable<ApiResource> GetApiResources(ApiSettings[] apiSettings)
         {
-            return new List<ApiResource>
+            List<ApiResource> result = new List<ApiResource>();
+            foreach (ApiSettings api in apiSettings)
             {
-                new ApiResource("api1", "My API")
+                result.Add(new ApiResource(api.Name, api.DisplayName)
                 {
-                    // Necessary to pass Identity user roles to API
-                    UserClaims = {"role"}
-                }
-                ,
-            };
+                    // In order to pass Identity user roles to API, must include UserClaims = { "role" }
+                    UserClaims = api.UserClaims
+                });
+            }
+            return result;
         }
 
-        public static IEnumerable<Client> GetClients(IdentityServerClients clients, string secret)
+        public static IEnumerable<Client> GetClients(ClientSettings[] clientSettings, string secret)
         {
             List<Client> result = new List<Client>();
-            foreach (ClientSettings client in clients.ClientSettings)
+            foreach (ClientSettings client in clientSettings)
             {
                 result.Add(Get(client, secret));
             }

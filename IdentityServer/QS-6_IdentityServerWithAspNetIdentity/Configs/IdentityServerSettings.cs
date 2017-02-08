@@ -2,6 +2,12 @@
 
 namespace IdentityServerWithAspNetIdentity.Configs
 {
+    public class ApiSettings
+    {
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public ICollection<string> UserClaims { get; set; }
+    }
     public class ClientSettings
     {
         public string Type { get; set; }
@@ -16,8 +22,9 @@ namespace IdentityServerWithAspNetIdentity.Configs
         public bool RequirePkce { get; set; }
         public ICollection<string> AllowedScopes { get; set; }
     }
-    public class IdentityServerClients
+    public class IdentityServerSettings
     {
         public ClientSettings[] ClientSettings { get; set; }
+        public ApiSettings[] ApiSettings { get; set; }
     }
 }
